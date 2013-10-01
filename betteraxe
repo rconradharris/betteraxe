@@ -1,0 +1,45 @@
+#!/bin/bash
+#
+#     betteraxe <filename> <search-string>
+#
+# DESCRIPTION
+#     Finds commits where a particular string was introduced and removed from
+#     a file in a git repository.
+#
+#     In certain cases involving merge commits, it's possible a line
+#     disappears in a way that git-pickaxe won't report on. This tool will
+#     catch this case and report the exact commits that caused a line with a
+#     string to be introduced and then removed.
+#
+# AUTHOR
+#     Rick Harris <rconradharris@gmail.com>
+COLOR_GREEN='\e[0;32m'
+COLOR_RED='\e[0;31m'
+COLOR_END='\e[0m'
+
+FILE=$1
+STRING=$2
+if [[ -z $FILE || -z $STRING ]]; then
+    echo "usage: betteraxe <filename> <search-string>"
+    exit 1
+fi
+
+SEEN=0
+HASHES=`git log --topo-order --reverse --pretty='%H' -- $FILE`
+for hash in $HASHES; do
+    git show $hash:$FILE 2> /dev/null | grep $STRING > /dev/null
+
+    if [[ $? -eq 0 ]]; then
+        if [[ $SEEN -eq 0 ]]; then
+            echo -e "${COLOR_GREEN}+++ $hash (ADDED)${COLOR_END}"
+            SEEN=1
+        else
+            echo -e "    $hash (SEEN)"
+        fi
+    else
+        if [[ $SEEN -eq 1 ]]; then
+            echo -e "${COLOR_RED}--- $hash (REMOVED)${COLOR_END}"
+            SEEN=0
+        fi
+    fi
+done
