@@ -7,3 +7,6 @@ repository.
 
 Certain weird cases involving merge commit prevent git-pickaxe from finding
 the removed case.
+
+
+![Screenshot](https://github.com/rconradharris/betteraxe/blob/master/screenshots/screenshot.png)
