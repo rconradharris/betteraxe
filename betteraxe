@@ -15,31 +15,36 @@
 #     Rick Harris <rconradharris@gmail.com>
 COLOR_GREEN='\e[0;32m'
 COLOR_RED='\e[0;31m'
+COLOR_YELLOW='\e[0;33m'
 COLOR_END='\e[0m'
 
 FILE=$1
-STRING=$2
-if [[ -z $FILE || -z $STRING ]]; then
+SEARCH_STRING=$2
+if [[ -z $FILE || -z $SEARCH_STRING ]]; then
     echo "usage: betteraxe <filename> <search-string>"
     exit 1
 fi
 
-SEEN=0
+LAST_MATCH=
 HASHES=`git log --topo-order --reverse --pretty='%H' -- $FILE`
 for hash in $HASHES; do
-    git show $hash:$FILE 2> /dev/null | grep $STRING > /dev/null
+    match=$(git show $hash:$FILE 2> /dev/null | grep $SEARCH_STRING)
 
-    if [[ $? -eq 0 ]]; then
-        if [[ $SEEN -eq 0 ]]; then
-            echo -e "${COLOR_GREEN}+++ $hash (ADDED)${COLOR_END}"
-            SEEN=1
+    if [[ -n $match ]]; then
+
+        if [[ -z $LAST_MATCH ]]; then
+            echo -e "${COLOR_GREEN}A $hash $match${COLOR_END}"
+        elif [[ $match == $LAST_MATCH ]]; then
+            echo -e "S $hash $match"
         else
-            echo -e "    $hash (SEEN)"
+            echo -e "${COLOR_YELLOW}U $hash $match${COLOR_END}"
         fi
     else
-        if [[ $SEEN -eq 1 ]]; then
-            echo -e "${COLOR_RED}--- $hash (REMOVED)${COLOR_END}"
-            SEEN=0
+
+        if [[ -n $LAST_MATCH ]]; then
+            echo -e "${COLOR_RED}D $hash $match${COLOR_END}"
         fi
     fi
+
+    LAST_MATCH=$match
 done
