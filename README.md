@@ -8,4 +8,4 @@ Certain weird cases involving merge commit prevent git-pickaxe from finding
 the removed case.
 
 
-![Screenshot](https://github.com/rconradharris/betteraxe/blob/master/screenshots/screenshot.png)
+![Screenshot](https://raw.github.com/rconradharris/betteraxe/master/screenshots/screenshot.png)
